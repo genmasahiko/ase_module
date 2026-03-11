@@ -1,4 +1,4 @@
-"""Backward-compatible import path for namelist parser."""
+"""Backward-compatible wrapper for namelist parser."""
 
 from parsers.namelist import parse_input_namelist
 
