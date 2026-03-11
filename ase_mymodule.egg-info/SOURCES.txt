@@ -1,8 +1,0 @@
-README.md
-setup.py
-ase_mymodule/__init__.py
-ase_mymodule/get_params.py
-ase_mymodule.egg-info/PKG-INFO
-ase_mymodule.egg-info/SOURCES.txt
-ase_mymodule.egg-info/dependency_links.txt
-ase_mymodule.egg-info/top_level.txt
