@@ -1,24 +1,25 @@
 # ase_mymodule
 
-ASE（Atomic Simulation Environment）向けの小さな補助ユーティリティ集です。  
-現在は以下の2機能を提供しています。
+Small utility helpers for ASE (Atomic Simulation Environment) workflows.
 
-- Fortran 形式の namelist 風入力ファイルを Python の辞書へ変換
-- ASE の `Vasp` 計算機で、標準パラメータ以外の INCAR タグを追記
+This package currently provides two features:
 
-> ⚠️ 個人用途を前提とした実装です。利用は自己責任でお願いします。
+- Parse Fortran-style namelist input blocks into Python dictionaries.
+- Extend ASE's `Vasp` calculator with arbitrary extra INCAR tags.
+
+> ⚠️ This project was originally created for personal use. Please use it at your own risk.
 
 ---
 
-## インストール
+## Installation
 
-### 開発中のリポジトリをそのまま使う
+### Install from this repository (development mode)
 
 ```bash
 pip install -e .
 ```
 
-### 通常インストール
+### Standard local install
 
 ```bash
 pip install .
@@ -26,25 +27,47 @@ pip install .
 
 ---
 
-## 使い方
+## Using with Conda
 
-### 1) namelist の読み込み
+If you want to use this as a module inside a Conda environment:
+
+1. Create and activate an environment.
+2. Install dependencies (including ASE) in that environment.
+3. Install this package into the same environment.
+
+```bash
+conda create -n ase-env python=3.10 -y
+conda activate ase-env
+conda install -c conda-forge ase -y
+pip install -e .
+```
+
+After this, you can import the module from any script running in `ase-env`.
+
+```python
+from ase_mymodule import parse_input_namelist
+```
+
+---
+
+## Usage
+
+### 1) Parse a namelist input file
 
 ```python
 from ase_mymodule import parse_input_namelist
 
 params = parse_input_namelist("input.in")
 print(params)
-# 例: {'control': {'calculation': 'scf', 'nstep': 100}}
+# Example: {'control': {'calculation': 'scf', 'nstep': 100}}
 ```
 
-`parse_input_namelist` は `&section ... /` ブロックを読み取り、
-キーを小文字化して辞書にします。
+`parse_input_namelist` reads `&section ... /` blocks and returns a nested dictionary with lowercase section names and keys.
 
-### 2) 追加 INCAR タグ付き VASP 計算機
+### 2) Use VASP with extra INCAR tags
 
 ```python
-from ase_mymodule.vasp_any_param import VaspExtraTags
+from ase_mymodule import VaspExtraTags
 
 calc = VaspExtraTags(
     directory="calc",
@@ -59,19 +82,20 @@ calc = VaspExtraTags(
 )
 ```
 
-`write_input` 実行時、ASE が通常の `INCAR` を生成した後に
-`extra_incar` の内容が追記されます。
+When `write_input` is called, ASE writes standard VASP inputs first, then values from `extra_incar` are appended to `INCAR`.
+
+> Note: `VaspExtraTags` requires ASE to be installed in your environment.
 
 ---
 
-## ディレクトリ構成
+## Repository structure
 
 ```text
 .
 ├── ase_mymodule/
-│   ├── __init__.py        # 公開 API
-│   ├── get_params.py      # namelist パーサ
-│   └── vasp_any_param.py  # extra INCAR 対応 VASP 計算機
+│   ├── __init__.py
+│   ├── get_params.py
+│   └── vasp_any_param.py
 ├── examples/
 │   └── parse_namelist_example.py
 ├── README.md
@@ -79,15 +103,13 @@ calc = VaspExtraTags(
 └── .gitignore
 ```
 
-生成物（`*.egg-info/`, `build/`, `__pycache__/` など）は
-リポジトリに含めない方針です。
+Generated artifacts such as `*.egg-info/`, `build/`, and `__pycache__/` are intentionally excluded from version control.
 
 ---
 
-## 開発メモ
+## Development note
 
 ```bash
-python -m compileall ase_mymodule
+python -m compileall ase_mymodule examples
 ```
 
-必要に応じて `pip install -e .` 後に手元のスクリプトから動作確認してください。
