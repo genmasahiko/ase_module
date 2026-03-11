@@ -82,7 +82,8 @@ calc = Vasp(
     directory="calc",
     xc="PBE",
     encut=500,
-    kpts=(4, 4, 1),
+    kpts=(18, 18, 1),
+    kpoints_shift=(0.5, 0.5, 0),
     extra_param={
         "ESMALPHA": 1.0,
         "LDIPOL": True,
@@ -92,6 +93,18 @@ calc = Vasp(
 ```
 
 When `write_input` is called, ASE writes standard VASP inputs first, then values from `extra_param` are appended to `INCAR`.
+
+When `kpoints_shift` is set, `KPOINTS` is overwritten in the following format:
+
+```text
+Automatic mesh
+0
+Gamma
+18 18 1
+0.5 0.5 0
+```
+
+(you can also change the third line/comment via `kpoints_mode` and `kpoints_comment`.)
 
 > `extra_param` support is currently implemented only for `ase.calculators.vasp.Vasp`.
 > Backward compatibility: `extra_incar` is still accepted as an alias.
