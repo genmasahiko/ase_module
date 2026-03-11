@@ -1,4 +1,4 @@
-"""Backward-compatible import path for VASP extra INCAR support."""
+"""Backward-compatible wrapper for VASP extra_param utilities."""
 
 from vasp.extra_param import VaspExtraTags, patch_ase_vasp
 

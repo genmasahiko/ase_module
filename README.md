@@ -4,8 +4,8 @@ Small utility helpers for ASE (Atomic Simulation Environment) workflows.
 
 This package currently provides two features:
 
-- Parse Fortran-style namelist input blocks into Python dictionaries.
-- Extend ASE's `Vasp` calculator with arbitrary extra INCAR tags.
+- Generic parser utilities (currently Fortran-style namelist parsing).
+- **VASP-specific** calculator extension for arbitrary INCAR tags via `extra_param`.
 
 > ⚠️ This project was originally created for personal use. Please use it at your own risk.
 
@@ -64,17 +64,27 @@ print(params)
 
 `parse_input_namelist` reads `&section ... /` blocks and returns a nested dictionary with lowercase section names and keys.
 
-### 2) Use VASP with extra INCAR tags
+Implementation-wise, this parser lives in top-level `parsers/` because it is calculator-agnostic.
+
+### 2) Use ASE standard `Vasp` with `extra_param` (VASP only)
+
+If you want to keep the standard ASE import style (`from ase.calculators.vasp import Vasp`),
+apply a one-time patch first:
 
 ```python
-from ase_mymodule import VaspExtraTags
+from ase_mymodule import patch_ase_vasp
 
-calc = VaspExtraTags(
+patch_ase_vasp()
+
+from ase.calculators.vasp import Vasp
+
+calc = Vasp(
     directory="calc",
     xc="PBE",
     encut=500,
-    kpts=(4, 4, 1),
-    extra_incar={
+    kpts=(18, 18, 1),
+    kpoints_shift=(0.5, 0.5, 0),
+    extra_param={
         "ESMALPHA": 1.0,
         "LDIPOL": True,
         "DIPOL": [0.5, 0.5, 0.5],
@@ -82,9 +92,22 @@ calc = VaspExtraTags(
 )
 ```
 
-When `write_input` is called, ASE writes standard VASP inputs first, then values from `extra_incar` are appended to `INCAR`.
+When `write_input` is called, ASE writes standard VASP inputs first, then values from `extra_param` are appended to `INCAR`.
 
-> Note: `VaspExtraTags` requires ASE to be installed in your environment.
+When `kpoints_shift` is set, `KPOINTS` is overwritten in the following format:
+
+```text
+Automatic mesh
+0
+Gamma
+18 18 1
+0.5 0.5 0
+```
+
+(you can also change the third line/comment via `kpoints_mode` and `kpoints_comment`.)
+
+> `extra_param` support is currently implemented only for `ase.calculators.vasp.Vasp`.
+> Backward compatibility: `extra_incar` is still accepted as an alias.
 
 ---
 
@@ -92,10 +115,14 @@ When `write_input` is called, ASE writes standard VASP inputs first, then values
 
 ```text
 .
-├── ase_mymodule/
+├── ase_mymodule/                  # public compatibility package
 │   ├── __init__.py
 │   ├── get_params.py
 │   └── vasp_any_param.py
+├── parsers/
+│   └── namelist.py                # calculator-agnostic parser
+├── vasp/
+│   └── extra_param.py             # VASP-only extension
 ├── examples/
 │   └── parse_namelist_example.py
 ├── README.md
